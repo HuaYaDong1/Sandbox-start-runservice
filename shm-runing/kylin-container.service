@@ -1,0 +1,9 @@
+[Unit]
+Description=kylin-runing-server
+
+[Service]
+User=root
+ExecStart=/usr/bin/shmread
+
+[Install]
+WantedBy=multi-user.target
