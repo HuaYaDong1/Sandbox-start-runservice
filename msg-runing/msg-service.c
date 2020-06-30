@@ -1,4 +1,6 @@
 #include<stdio.h>
+#include<syslog.h> 
+#include<stdarg.h>
 #include<stdlib.h>
 #include<string.h>
 #include<sys/msg.h>
@@ -20,7 +22,6 @@ int msgsend()
                 printf("create msg error \n");
                 return 0;
         }
-
                 char msg[512];
                 memset(msg,0,sizeof(msg));
                 ckxmsg.mtype = 1;
@@ -31,12 +32,13 @@ int msgsend()
                         printf("send msg error \n");
                         return 0;
                 }
-
         return 0;
 }
 
 int main()
 {
+	char mount[1024];
+        char umount[1024];
 	int id = 0;
 	struct mymesg ckxmsg;
 	key_t key = ftok("/tmp",66);
@@ -55,6 +57,21 @@ int main()
 			return 0;
 		}
 		printf("data:%s\n",ckxmsg.mtext);
+
+		ckxmsg.mtext[strlen(ckxmsg.mtext)-1]=0;
+                
+		memset(umount, 0, sizeof(umount));
+                memset(mount, 0, sizeof(mount));
+                
+		sprintf(umount, "umount /opt/%s",ckxmsg.mtext);
+                system(umount);
+               // puts(umount);
+		syslog(LOG_DEBUG, "msg-service------------------------------: '%s'\n",  umount); 
+
+                sprintf(mount, "mount -t aufs -o  dirs=/opt/%s=rw:/opt/app_runtime=ro:/opt/base_runtime=ro none /opt/%s", ckxmsg.mtext, ckxmsg.mtext);
+                system(mount);
+               // puts(mount);
+		syslog(LOG_DEBUG, "msg-service------------------------------: '%s'\n",  mount);
 
 		msgsend();
 
