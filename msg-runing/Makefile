@@ -19,6 +19,7 @@ clean:
 
 
 install:
+	touch /tmp/1
 	cp ./msg-service  /usr/bin/
 	cp ./kylin-container.service  /usr/lib/systemd/system/
 	systemctl start kylin-container.service
