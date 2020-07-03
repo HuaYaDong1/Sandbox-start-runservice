@@ -122,7 +122,7 @@ void split(char *src, const char *separator, char **dest)
         */
         char *pNext;
         int count = 0;
-        
+
         if (src == NULL || strlen(src) == 0) //如果传入的地址为空或长度为0，直接终止
                 return;
 
@@ -165,8 +165,8 @@ void bwrap_run(char *argv)
                 --unshare-pid\
                 --bind /etc/passwd  /etc/passwd\
                 --bind /etc/group   /etc/group\
-                /bin/sh ",
-                argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv);
+                %s ",
+                argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv);
         //puts(str);
         system(str);
 }
@@ -189,15 +189,21 @@ int main(int argc, char *argv[])
         if (argc < 2 || (!strcmp("--help", argv[1])) || (!strcmp("-h", argv[1])))
         {
                 puts("-h    or  --help                              打印帮助(本信息)并退出.");
-                puts("-d    app_name                                默认地址挂载运行");
-                puts("-b    app_name@platform_alias                 指定base_runtime平台 挂载运行");
-                puts("-c    appName     localdir                    指定local_runtimer平台挂载运行");
-                puts("-p    app_name@platform_alias     localdir    手动指定地址");
+                puts("-l    or  --list                              打印以安装应用信息列表.");
+                puts("-d    app_name                                默认地址挂载运行.");
+                puts("-b    app_name@platform_alias                 指定base_runtime平台 挂载运行.");
+                puts("-c    appName     localdir                    指定local_runtimer平台挂载运行.");
+                puts("-p    app_name@platform_alias     localdir    指定base_runtime平台，local_runtimer平台 挂载运行.");
+                return 0;
+        }
+        else if ((!strcmp("-l", argv[1])) || (!strcmp("--list", argv[1])))
+        {
+                puts("---------------");
                 return 0;
         }
         else if (!strcmp("-d", argv[1]))
         {
-                if (argc < 3)
+                if (argc != 3)
                 {
                         puts("please input : app_name");
                         return 0;
@@ -208,58 +214,63 @@ int main(int argc, char *argv[])
         }
         else if (!strcmp("-b", argv[1]))
         {
-                if (argc < 3)
+                if (argc != 3)
                 {
                         puts("please input : app_name@platform_alias");
                         return 0;
                 }
-                split(argv[2], "@", appmsg_all);//分割app_name@platform_alias字符
-                
-                puts(appmsg_all[0]);puts(appmsg_all[1]);
-                
+                split(argv[2], "@", appmsg_all); //分割app_name@platform_alias字符
+
+                puts(appmsg_all[0]);
+                puts(appmsg_all[1]);
+
                 strcpy(app_name, appmsg_all[0]);
-                strcpy(local_name, "/opt/app_runtime");//默认local_runtime
+                strcpy(local_name, "/opt/app_runtime"); //默认local_runtime
                 strcpy(base_name, appmsg_all[1]);
         }
         else if (!strcmp("-c", argv[1]))
         {
-                if (argc < 4)
+                if (argc != 4)
                 {
                         puts("please input : appName  localdir");
                         return 0;
                 }
                 strcpy(app_name, argv[2]);
                 strcpy(local_name, argv[3]);
-                strcpy(base_name, "/opt/base_runtime");//默认base_runtime
+                strcpy(base_name, "/opt/base_runtime"); //默认base_runtime
         }
         else if (!strcmp("-p", argv[1]))
         {
-                if (argc < 4)
+                if (argc != 4)
                 {
                         puts("please input ： app_name@platform_alias  localdir");
                         return 0;
                 }
-                split(argv[2], "@", appmsg_all);//分割app_name@platform_alias字符
+                split(argv[2], "@", appmsg_all); //分割app_name@platform_alias字符
 
-                puts(appmsg_all[0]);puts(appmsg_all[1]);
-                
+                puts(appmsg_all[0]);
+                puts(appmsg_all[1]);
+
                 strcpy(app_name, appmsg_all[0]);
                 strcpy(local_name, argv[3]);
                 strcpy(base_name, appmsg_all[1]);
         }
         else
         {
-                puts("输入错误");
+                puts("输入错误  -h or --help");
                 return 0;
         }
 
-        sprintf(msg_all,"%s-%s-%s", app_name, local_name, base_name);
+        puts(app_name);
+        puts(local_name);
+        puts(base_name);
+        sprintf(msg_all, "%s-%s-%s", app_name, local_name, base_name);
 
         puts(msg_all);
 
         msgsend(msg_all);
 
-        msgrcvget(app_name);
+        msgrcvget(app_name); //接收返回信息
 
         bwrap_run(app_name);
 
