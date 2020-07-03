@@ -6,6 +6,10 @@
 #include <sys/ipc.h>
 #include <unistd.h>
 
+char app_name[1024];
+char local_name[1024];
+char base_name[1024];
+
 int find_pid_by_name(char *ProcName)
 {
         DIR *dir;
@@ -78,8 +82,8 @@ int msgsend(char *argv)
         char msg[512];
         memset(msg, 0, sizeof(msg));
         ckxmsg.mtype = 1;
-        strcpy(ckxmsg.mtext, argv);
 
+        strcpy(ckxmsg.mtext, argv);
         if (msgsnd(id, (void *)&ckxmsg, 512, 0) < 0)
         {
                 printf("send msg error \n");
@@ -123,7 +127,7 @@ void bwrap_run(char *argv)
                 --bind  /opt/%s/media /media\
                 --bind  /opt/%s/mnt /mnt\
                 --bind  /opt/%s/opt  /opt\
-                --ro-bind  /proc /proc\
+                --proc  /proc\
                 --bind  /opt/%s/root /root\
                 --bind  /run /run\
                 --bind  /opt/%s/sbin /sbin\
@@ -133,28 +137,72 @@ void bwrap_run(char *argv)
                 --bind  /opt/%s/usr /usr\
                 --bind  /opt/%s/var /var\
                 --bind /home /home\
+                --unshare-pid\
                 --bind /etc/passwd  /etc/passwd\
                 --bind /etc/group   /etc/group\
-                %s ", argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv);
-	puts(str);
-	system(str);
-
+                /bin/sh ",
+                argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv, argv);
+        //puts(str);
+        system(str);
 }
 
 int main(int argc, char *argv[])
 {
-        if (argc < 2)
-        {
-                puts("please input appname");
-                return 0;
-        }
         if (!find_pid_by_name("msg-service"))
         {
                 //puts("The server 'msg-service' is not running");
                 //return 0;
         }
-        msgsend(argv[1]);
-        msgrcvget(argv[1]);
-	bwrap_run(argv[1]);
+        
+        char msg_all[10240];
+        memset(msg_all, 0, sizeof(msg_all));
+        memset(app_name, 0, sizeof(app_name));
+        memset(local_name, 0, sizeof(local_name));
+        memset(base_name, 0, sizeof(base_name));
+
+        if (argc < 2 || (!strcmp("--help", argv[1])) || (!strcmp("-h", argv[1])))
+        {
+                puts("-h    or  --help                              打印帮助(本信息)并退出.");
+                puts("-d    app_name                                默认地址挂载运行");
+                puts("-p    base_path   local_path   app_name       手动指定地址");
+                return 0;
+        }
+        else if (!strcmp("-d", argv[1]))
+        {
+                if (argc < 3)
+                {
+                        puts("please input app_name");
+                        return 0;
+                }
+                strcpy(app_name, argv[2]);
+                strcpy(local_name, "/opt/app_runtime");
+                strcpy(base_name, "/opt/base_runtime");
+        }
+        else if (!strcmp("-p", argv[1]))
+        {
+                if (argc < 5)
+                {
+                        puts("please input   base_path   local_path   app_name");
+                        return 0;
+                }
+                strcpy(app_name, argv[4]);
+                strcpy(local_name, argv[3]);
+                strcpy(base_name, argv[2]);
+        }
+        else
+        {
+                puts("输入错误");
+                return 0;
+        }
+        sprintf(msg_all,"%s-%s-%s", app_name, local_name, base_name);
+
+        puts(msg_all);
+
+        msgsend(msg_all);
+
+        msgrcvget(app_name);
+
+        bwrap_run(app_name);
+
         return 0;
 }

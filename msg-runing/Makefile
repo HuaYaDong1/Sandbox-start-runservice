@@ -1,10 +1,10 @@
-CFLAGS = -g -Wall -Werror
+CFLAGS = `pkg-config --cflags --libs gtk+-2.0`
 
 all:  msg-client  msg-service
 
 
 msg-service:msg-service.c
-	gcc $< -o $@  
+	gcc $< -o $@ 
 	
 msg-client:msg-client.c
 	gcc $< -o $@  
