@@ -50,7 +50,7 @@ void split(char *src, const char *separator, char **dest)
         */
         char *pNext;
         int count = 0;
-        
+
         if (src == NULL || strlen(src) == 0) //如果传入的地址为空或长度为0，直接终止
                 return;
 
@@ -88,12 +88,14 @@ int main()
                         return 0;
                 }
 
-                split(ckxmsg.mtext, "-", msg_all);//分割传过来的字符
-                
+                split(ckxmsg.mtext, "-", msg_all); //分割传过来的字符
+
                 strcpy(app_name, msg_all[0]);
                 strcpy(local_name, msg_all[1]);
                 strcpy(base_name, msg_all[2]);
-                puts(app_name);puts(local_name);puts(base_name);
+                puts(app_name);
+                puts(local_name);
+                puts(base_name);
 
                 //ckxmsg.mtext[strlen(ckxmsg.mtext) - 1] = 0;//删除末尾字符
 
@@ -105,7 +107,8 @@ int main()
                 // puts(umount);
                 syslog(LOG_DEBUG, "msg-service----------------------: '%s'\n", umount);
 
-                sprintf(mount, "mount -t aufs -o  dirs=/opt/%s=rw:%s=ro:%s=ro none /opt/%s", app_name,  local_name,  base_name,  app_name);
+                sprintf(mount, "mount -n -t overlay overlayfs:/overlay -o lowerdir=%s:%s,upperdir=/opt/%s,workdir=/opt/worker /opt/%s",local_name,base_name,app_name,app_name);
+                //sprintf(mount, "mount -t aufs -o  dirs=/opt/%s=rw:%s=ro:%s=ro none /opt/%s", app_name, local_name, base_name, app_name);
                 system(mount);
                 // puts(mount);
                 syslog(LOG_DEBUG, "msg-service----------------------: '%s'\n", mount);

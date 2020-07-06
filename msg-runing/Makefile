@@ -6,10 +6,10 @@ msg-service:msg-service.c
 	gcc $< -o $@ 
 	
 msg-client:msg-client.c
-	gcc $< -o $@  
+	gcc $< -o $@ -lsqlite3 
 
 clean:
-	rm -f msg-client
+	rm -f msg-client 
 	rm -f msg-service
 
 .PHONY: all clean
