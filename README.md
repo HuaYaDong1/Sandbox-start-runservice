@@ -1,15 +1,3 @@
-1.共享内存
+主代码为q_dbus
+暂做代码保存
 
-cd shm-runing     
-make    
-sudo make install    
-普通权限执行./shmwrite    
-输入 vlc   
-
-到/opt 可以看到 挂载成功
-
-
-
-
-2.gdbus
-dbus方式设置服务不成功，暂且搁置
